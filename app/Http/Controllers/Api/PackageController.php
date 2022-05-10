@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Package\IndexRequest;
+use App\Http\Requests\Api\Package\StoreRequest;
 use App\Http\Resources\PackageResource;
 use App\Models\Package;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,5 +28,12 @@ class PackageController extends Controller
             ->get();
 
         return PackageResource::collection($packages);
+    }
+
+    public function store(StoreRequest $request): PackageResource
+    {
+        $package = Package::query()->create($request->validated());
+
+        return new PackageResource($package);
     }
 }

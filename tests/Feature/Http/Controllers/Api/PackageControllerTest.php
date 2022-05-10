@@ -4,13 +4,14 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\Package;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Arr;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class PackageControllerTest extends TestCase
 {
-    use DatabaseMigrations;
+    use DatabaseMigrations, WithFaker;
 
     public function testIndexValidation()
     {
@@ -87,9 +88,97 @@ class PackageControllerTest extends TestCase
         $this->assertCount(1, $data);
     }
 
+    public function testStoreValidationRequired()
+    {
+        $this
+            ->sendStoreRequest()
+            ->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    'storage_location_id',
+                    'description',
+                    'delivery_address',
+                    'delivery_date',
+                ],
+            ]);
+    }
+
+    public function testStoreValidationDetails()
+    {
+        $this
+            ->sendStoreRequest([
+                'storage_location_id' => 'a',
+                'description'         => $this->faker->realText(400),
+                'delivery_date'       => 'a',
+            ])
+            ->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    'storage_location_id',
+                    'description',
+                    'delivery_date',
+                ],
+            ]);
+    }
+
+    public function testStoreValidationStorageLocationAlreadyUsed()
+    {
+        $package = Package::factory()->create();
+
+        $this
+            ->sendStoreRequest([
+                'storage_location_id' => $package->storage_location_id,
+                'description'         => $this->faker->text(),
+                'delivery_address'    => $package->delivery_address,
+                'delivery_date'       => $package->delivery_date,
+            ])
+            ->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => [
+                    'storage_location_id',
+                ],
+            ]);
+    }
+
+    public function testStoreSuccess()
+    {
+        $package = Package::factory()->make();
+
+        $this
+            ->sendStoreRequest([
+                'storage_location_id' => $package->storage_location_id,
+                'description'         => $package->description,
+                'delivery_address'    => $package->delivery_address,
+                'delivery_date'       => $package->delivery_date,
+            ])
+            ->assertStatus(201)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'storage_location_id',
+                    'description',
+                    'delivery_address',
+                    'delivery_date',
+                ],
+            ])
+            ->assertJson([
+                'data' => [
+                    'storage_location_id' => $package->storage_location_id,
+                    'description'         => $package->description,
+                    'delivery_address'    => $package->delivery_address,
+                    'delivery_date'       => $package->delivery_date,
+                ],
+            ]);
+    }
+
     private function sendIndexRequest(array $params = []): TestResponse
     {
         return $this->json('GET', route('api.packages.index'), $params);
+    }
+
+    private function sendStoreRequest(array $data = []): TestResponse
+    {
+        return $this->json('POST', route('api.packages.store'), $data);
     }
 
     private function packageValidationData(Package $package): array
