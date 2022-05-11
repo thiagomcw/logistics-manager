@@ -36,4 +36,9 @@ class PackageController extends Controller
 
         return new PackageResource($package);
     }
+
+    public function show(Package $package): PackageResource
+    {
+        return new PackageResource($package);
+    }
 }

@@ -171,6 +171,25 @@ class PackageControllerTest extends TestCase
             ]);
     }
 
+    public function testShowBindingError()
+    {
+        $this
+            ->sendShowRequest()
+            ->assertStatus(404);
+    }
+
+    public function testShowSuccess()
+    {
+        $package = Package::factory()->create();
+
+        $this
+            ->sendShowRequest($package->getKey())
+            ->assertStatus(200)
+            ->assertJson([
+                'data' => $this->packageValidationData($package),
+            ]);
+    }
+
     private function sendIndexRequest(array $params = []): TestResponse
     {
         return $this->json('GET', route('api.packages.index'), $params);
@@ -179,6 +198,11 @@ class PackageControllerTest extends TestCase
     private function sendStoreRequest(array $data = []): TestResponse
     {
         return $this->json('POST', route('api.packages.store'), $data);
+    }
+
+    private function sendShowRequest(int $id = 0): TestResponse
+    {
+        return $this->json('GET', route('api.packages.show', $id));
     }
 
     private function packageValidationData(Package $package): array
