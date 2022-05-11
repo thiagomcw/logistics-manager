@@ -190,6 +190,91 @@ class PackageControllerTest extends TestCase
             ]);
     }
 
+    public function testUpdateBindingError()
+    {
+        $this
+            ->sendUpdateRequest()
+            ->assertStatus(404);
+    }
+
+    public function testUpdateValidationRequired()
+    {
+        $package = Package::factory()->create([
+            'delivery_date' => now()->format('Y-m-d'),
+        ]);
+
+        $this
+            ->sendUpdateRequest($package->getKey())
+            ->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => ['status'],
+            ]);
+    }
+
+    public function testUpdateValidationDetails()
+    {
+        $package = Package::factory()->create([
+            'delivery_date' => now()->format('Y-m-d'),
+        ]);
+
+        $this
+            ->sendUpdateRequest($package->getKey(), [
+                'status' => 'a',
+            ])
+            ->assertStatus(422)
+            ->assertJsonStructure([
+                'errors' => ['status'],
+            ]);
+    }
+
+    public function testUpdateUnauthorizedByStatus()
+    {
+        $package = Package::factory()->create([
+            'status'        => 'delivered',
+            'delivery_date' => now()->format('Y-m-d'),
+        ]);
+
+        $this
+            ->sendUpdateRequest($package->getKey(), [
+                'status' => 'a',
+            ])
+            ->assertStatus(403);
+    }
+
+    public function testUpdateUnauthorizedByDeliveryDate()
+    {
+        $package = Package::factory()->create([
+            'delivery_date' => now()->addDay()->format('Y-m-d'),
+        ]);
+
+        $this
+            ->sendUpdateRequest($package->getKey(), [
+                'status' => 'a',
+            ])
+            ->assertStatus(403);
+    }
+
+    public function testUpdateSuccess()
+    {
+        $package = Package::factory()->create([
+            'delivery_date' => now()->format('Y-m-d'),
+        ]);
+
+        $this
+            ->sendUpdateRequest($package->getKey(), [
+                'status' => 'delivered',
+            ])
+            ->assertStatus(200)
+            ->assertJson([
+                'data' => $this->packageValidationData($package->refresh()),
+            ])
+            ->assertJson([
+                'data' => [
+                    'status' => 'delivered',
+                ],
+            ]);
+    }
+
     private function sendIndexRequest(array $params = []): TestResponse
     {
         return $this->json('GET', route('api.packages.index'), $params);
@@ -203,6 +288,11 @@ class PackageControllerTest extends TestCase
     private function sendShowRequest(int $id = 0): TestResponse
     {
         return $this->json('GET', route('api.packages.show', $id));
+    }
+
+    private function sendUpdateRequest(int $id = 0, array $data = []): TestResponse
+    {
+        return $this->json('PUT', route('api.packages.update', $id), $data);
     }
 
     private function packageValidationData(Package $package): array

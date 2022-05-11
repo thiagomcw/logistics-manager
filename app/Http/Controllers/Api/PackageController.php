@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Package\IndexRequest;
 use App\Http\Requests\Api\Package\StoreRequest;
+use App\Http\Requests\Api\Package\UpdateRequest;
 use App\Http\Resources\PackageResource;
 use App\Models\Package;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,5 +41,12 @@ class PackageController extends Controller
     public function show(Package $package): PackageResource
     {
         return new PackageResource($package);
+    }
+
+    public function update(Package $package, UpdateRequest $request): PackageResource
+    {
+        $package->update($request->validated());
+
+        return new PackageResource($package->refresh());
     }
 }
