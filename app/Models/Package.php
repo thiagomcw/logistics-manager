@@ -25,7 +25,6 @@ class Package extends Model
 
     const STATUS = [
         'stored',
-        'delivering',
         'delivered',
     ];
 

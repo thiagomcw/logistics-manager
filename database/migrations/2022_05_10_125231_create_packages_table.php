@@ -12,7 +12,7 @@ return new class extends Migration {
 
             $table->unsignedInteger('storage_location_id')->nullable();
             $table->string('description');
-            $table->enum('status', ['stored', 'delivering', 'delivered']);
+            $table->enum('status', ['stored', 'delivered']);
             $table->text('delivery_address');
             $table->date('delivery_date');
 
