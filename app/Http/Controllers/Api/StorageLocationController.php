@@ -16,7 +16,10 @@ class StorageLocationController extends Controller
         $locations = StorageLocation::query()
             ->where(function (Builder $builder) use ($request) {
                 if ($request->get('available')) {
-                    $builder->whereDoesntHave('package');
+                    $builder->whereDoesntHave(
+                        'package',
+                        fn(Builder $package) => $package->where('status', 'stored')
+                    );
                 }
             })
             ->get();
