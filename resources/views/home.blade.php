@@ -4,12 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Laravel</title>
+    <title>Log Manager</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body class="antialiased">
+
 <div id="app">
-    <example-component></example-component>
+    <router-view/>
 </div>
 
 <script src="{{ asset('js/app.js') }}" defer></script>
