@@ -9,7 +9,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <router-link class="nav-link" :to="{name: 'packages.index'}">Home</router-link>
+                    <router-link class="nav-link" :to="{name: 'packages.index'}">Packages</router-link>
                     <router-link class="nav-link" :to="{name: 'delivery-map.index'}">Features</router-link>
                 </div>
             </div>
