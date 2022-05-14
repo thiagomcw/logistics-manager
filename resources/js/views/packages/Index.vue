@@ -64,7 +64,6 @@
 
 <script>
 import Packages from "../../api/endpoints/Packages";
-import moment from "moment";
 
 export default {
     name: 'PackagesIndex',
@@ -106,7 +105,7 @@ export default {
         },
 
         catBeDelivered(packageItem) {
-            return packageItem.status === this.storedStatus && packageItem.delivery_date === moment().format('YYYY-MM-DD');
+            return packageItem.status === this.storedStatus && new Date(packageItem.delivery_date) <= new Date();
         }
     },
 

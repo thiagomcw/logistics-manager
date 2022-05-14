@@ -13,6 +13,7 @@
     <router-view/>
 </div>
 
+<script src="https://maps.googleapis.com/maps/api/js?key={{config('google-maps.api-key')}}&libraries=places"></script>
 <script src="{{ asset('js/app.js') }}" defer></script>
 </body>
 </html>
