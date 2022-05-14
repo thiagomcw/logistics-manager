@@ -88,6 +88,28 @@ class PackageControllerTest extends TestCase
         $this->assertCount(1, $data);
     }
 
+    public function testNextDeliveryDatesSuccess()
+    {
+        Package::factory()->create(['delivery_date' => now()->format('Y-m-d')]);
+        $package2 = Package::factory()->create(['delivery_date' => now()->addDay()->format('Y-m-d')]);
+        $package3 = Package::factory()->create(['delivery_date' => now()->addDays(2)->format('Y-m-d')]);
+        $package4 = Package::factory()->create(['delivery_date' => now()->addDays(3)->format('Y-m-d')]);
+
+        $data = $this
+            ->sendNextDeliveryDatesRequest()
+            ->assertStatus(200)
+            ->assertJson([
+                'data' => [
+                    $package2->delivery_date,
+                    $package3->delivery_date,
+                    $package4->delivery_date,
+                ],
+            ])
+            ->json('data');
+
+        $this->assertCount(3, $data);
+    }
+
     public function testStoreValidationRequired()
     {
         $this
@@ -278,6 +300,11 @@ class PackageControllerTest extends TestCase
     private function sendIndexRequest(array $params = []): TestResponse
     {
         return $this->json('GET', route('api.packages.index'), $params);
+    }
+
+    private function sendNextDeliveryDatesRequest(): TestResponse
+    {
+        return $this->json('GET', route('api.packages.next-delivery-dates'));
     }
 
     private function sendStoreRequest(array $data = []): TestResponse

@@ -9,6 +9,7 @@ use App\Http\Requests\Api\Package\UpdateRequest;
 use App\Http\Resources\PackageResource;
 use App\Models\Package;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PackageController extends Controller
@@ -29,6 +30,19 @@ class PackageController extends Controller
             ->get();
 
         return PackageResource::collection($packages);
+    }
+
+    public function nextDeliveryDates(): JsonResponse
+    {
+        $dates = Package::query()
+            ->select('delivery_date')
+            ->where('delivery_date', '>', now()->format('Y-m-d'))
+            ->groupBy('delivery_date')
+            ->orderBy('delivery_date')
+            ->pluck('delivery_date')
+            ->values();
+
+        return response()->json(['data' => $dates]);
     }
 
     public function store(StoreRequest $request): PackageResource
