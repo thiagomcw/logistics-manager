@@ -16,7 +16,6 @@
                                 </select>
                             </div>
                             <div class="col">
-                                <i data-feather="airplay"></i>
                                 <router-link class="btn btn-primary float-end" :to="{name: 'packages.form'}">
                                     <i class="bi-plus-lg"></i>
                                     Add Package
@@ -30,8 +29,8 @@
                                 <th scope="col" class="col-1">Deliver On</th>
                                 <th scope="col" class="col-1">Status</th>
                                 <th scope="col" class="col-1" title="Storage Location">SL</th>
-                                <th scope="col" class="col-4">Description</th>
-                                <th scope="col" class="col-4">Address</th>
+                                <th scope="col" class="col-3">Description</th>
+                                <th scope="col" class="col-5">Address</th>
                                 <th scope="col" class="col-1"></th>
                             </tr>
                             </thead>
@@ -53,6 +52,16 @@
                                     </button>
                                 </td>
                             </tr>
+                            <tr v-if="loading">
+                                <td colspan="6" class="text-center">
+                                    <loader/>
+                                </td>
+                            </tr>
+                            <tr v-if="!loading && packages.length === 0">
+                                <td colspan="6" class="text-center">
+                                    No packages found.
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </div>
@@ -64,15 +73,21 @@
 
 <script>
 import Packages from "../../api/endpoints/Packages";
+import Loader from "../../components/Loader";
 
 export default {
     name: 'PackagesIndex',
+
+    components: {
+        Loader
+    },
 
     data() {
         const storedStatus = 'stored';
         const deliveredStatus = 'delivered';
 
         return {
+            loading: false,
             storedStatus: storedStatus,
             deliveredStatus: deliveredStatus,
             packages: [],
@@ -93,12 +108,19 @@ export default {
 
     methods: {
         loadPackages(status) {
+            this.packages = [];
+            this.loading = true;
+
             Packages
                 .index({status})
-                .then((response) => this.packages = response.data);
+                .then((response) => {
+                    this.packages = response.data;
+                    this.loading = false;
+                });
         },
 
         setAsDelivered(id) {
+            this.loading = true;
             Packages
                 .update(id, {status: this.deliveredStatus})
                 .then(() => this.loadPackages(this.storedStatus))

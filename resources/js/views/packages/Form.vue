@@ -53,6 +53,9 @@
                                         Back
                                     </router-link>
                                 </div>
+                                <div class="col-12 text-center" v-if="loading">
+                                    <loader/>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -66,18 +69,21 @@
 import StorageLocations from "../../api/endpoints/StorageLocations";
 import Packages from "../../api/endpoints/Packages";
 import FieldError from "../../components/FieldError";
+import Loader from "../../components/Loader";
 import VueGoogleAutocomplete from "vue-google-autocomplete";
 
 export default {
     name: 'PackagesForm',
 
     components: {
+        Loader,
         FieldError,
         VueGoogleAutocomplete
     },
 
     data() {
         return {
+            loading: false,
             addressAutocomplete: null,
             newPackage: {
                 storage_location_id: null,
@@ -92,12 +98,19 @@ export default {
 
     methods: {
         storePackage() {
+            this.loading = true;
             this.formErrors = {};
 
             Packages
                 .store(this.newPackage)
-                .then(() => this.$router.push({name: 'packages.index'}))
-                .catch((errors) => this.formErrors = errors);
+                .then(() => {
+                    this.loading = false;
+                    this.$router.push({name: 'packages.index'})
+                })
+                .catch((errors) => {
+                    this.formErrors = errors
+                    this.loading = false;
+                });
         },
 
         loadStorageLocations() {
